@@ -1,4 +1,4 @@
-﻿/// Anything modified from the source code will have a bunch of comment out ////
+/// Anything modified from the source code will have a bunch of comment out ////
 /// and *** UPDATE *** preceeding the comment
 using System;
 using System.Collections.Generic;
@@ -89,38 +89,25 @@ namespace Treap
             Node<T> temp = root.Right;
             root.Right = temp.Left;
             temp.Left = root;
-
-            ////////
-            // update the MaxLeft and MaxRight of the old root
-            root.MaxLeft = FindMaxLeft(root);
-            root.MinRight = FindMinRight(root);
-
             return temp;
         }
 
         // RightRotate
         // Performs a right rotation around the given root
-        // Time complexity:  O(log n) (because of FindMaxLeft and FindMaxRight)
+        // Time complexity:  O(1) 
 
         private Node<T> RightRotate(Node<T> root)
         {
             Node<T> temp = root.Left;
             root.Left = temp.Right;
             temp.Right = root;
-
-            ////////
-            // *** UPDATE ***
-            // update the MaxLeft and MaxRight of the old root
-            root.MaxLeft = FindMaxLeft(root);
-            root.MinRight = FindMinRight(root);
-
             return temp;
         }
 
         // *** UPDATE ***
         // FindMaxLeft
         // Finds the max value of the left subtree in the current root in a BST
-        // Time complexity:  O(log n)
+        // Time complexity:  O(1) for every rotation
 
         public Node<T> FindMaxLeft(Node<T> root)
         {
@@ -136,7 +123,8 @@ namespace Treap
         // *** UPDATE ***
         // FindMaxLeft
         // Finds the min value of the right subtree in the current root in a BST
-        // Time complexity:  O(log n)
+        // The value of MinRight only changes when a rotation disconnects the 
+        // Time complexity:  O(1) for every rotation
 
         public Node<T> FindMinRight(Node<T> root)
         {
@@ -203,7 +191,7 @@ namespace Treap
         // Public Add
         // Inserts the given item into the Treap
         // Calls Private Add to carry out the actual insertion
-        // Expected time complexity:  O(log n)
+        // Expected time complexity:  O(1)
 
         public void Add(T item)
         {
@@ -249,9 +237,10 @@ namespace Treap
 
                 ////////
                 // *** UPDATE *** Update MaxLeft and MinRight for visited nodes
+                // O(1) each, thus add is still O(log n)
                 root.MaxLeft = FindMaxLeft(root);
                 root.MinRight = FindMinRight(root);
-                // *** UPDATE *** recalculate the minimum gap of each node we visit
+                // *** UPDATE *** recalculate the minimum gap of each node we visit (O(1))
                 CalcMinGap(root);
 
                 return root;
@@ -317,9 +306,10 @@ namespace Treap
 
                 ////////
                 // *** UPDATE *** Update MaxLeft and MinRight for visited nodes
+                // O(1) each. Remove is still O(log n)
                 root.MaxLeft = FindMaxLeft(root);
                 root.MinRight = FindMinRight(root);
-                // *** UPDATE *** recalculate the minimum gap of each node we visit
+                // *** UPDATE *** recalculate the minimum gap of each node we visit (O(1))
                 CalcMinGap(root);
 
                 return root;
@@ -504,4 +494,3 @@ namespace Treap
         }
     }
 }
-
