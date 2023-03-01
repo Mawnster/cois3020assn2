@@ -147,43 +147,45 @@ namespace Treap
 
         private void CalcMinGap(Node<T> root)
         {
-            // **NOTE**: This section breaks down if Treap is not Treap<int>
-            // can't think of how to find minimum between other generic types rn. Will email him to ask.
+            // **NOTE**: MinGap is only calculated for Treap<int>
             int curItem, diffLeftItem = int.MaxValue, diffRightItem = int.MaxValue;
-            curItem = Convert.ToInt32(root.Item);
-            if (root.MaxLeft != null)
-                diffLeftItem = curItem - Convert.ToInt32(root.MaxLeft.Item);
-            if (root.MinRight != null)
-                diffRightItem = Convert.ToInt32(root.MinRight.Item) - curItem;
-
-
-            // Compare the gaps of the root. Assign MinGap as the smaller value
-            if (diffLeftItem < diffRightItem)
-                root.MinGap = diffLeftItem;
-            else
-                root.MinGap = diffRightItem;
-
-            // Compare against MinGap of Left and Right Subtrees.
-            // Change the root's MinGap if the subtree's is smaller
-            if (root.Left != null)
+            if (root.Item is int) // minGap not calculated for other generic types.
             {
-                if (root.Right != null)
+                curItem = Convert.ToInt32(root.Item);
+                if (root.MaxLeft != null)
+                    diffLeftItem = curItem - Convert.ToInt32(root.MaxLeft.Item);
+                if (root.MinRight != null)
+                    diffRightItem = Convert.ToInt32(root.MinRight.Item) - curItem;
+
+
+                // Compare the gaps of the root. Assign MinGap as the smaller value
+                if (diffLeftItem < diffRightItem)
+                    root.MinGap = diffLeftItem;
+                else
+                    root.MinGap = diffRightItem;
+
+                // Compare against MinGap of Left and Right Subtrees.
+                // Change the root's MinGap if the subtree's is smaller
+                if (root.Left != null)
                 {
-                    // Compare with right subtree if it exists
+                    if (root.Right != null)
+                    {
+                        // Compare with right subtree if it exists
+                        if (root.MinGap > root.Right.MinGap)
+                            root.MinGap = root.Right.MinGap;
+                    }
+
+                    // Compare with left subtree if it exists
+                    if (root.MinGap > root.Left.MinGap)
+                        root.MinGap = root.Left.MinGap;
+                }
+
+                // If only right subtree exists, compare with right subtree
+                else if (root.Right != null)
+                {
                     if (root.MinGap > root.Right.MinGap)
                         root.MinGap = root.Right.MinGap;
                 }
-
-                // Compare with left subtree if it exists
-                if (root.MinGap > root.Left.MinGap)
-                    root.MinGap = root.Left.MinGap;
-            }
-
-            // If only right subtree exists, compare with right subtree
-            else if (root.Right != null)
-            {
-                if (root.MinGap > root.Right.MinGap)
-                    root.MinGap = root.Right.MinGap;
             }
         }
 
@@ -462,7 +464,8 @@ namespace Treap
             Console.WriteLine("Size of the Treap  : " + B.Size());
             Console.WriteLine("Height of the Treap: " + B.Height());
             Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
-            Console.WriteLine("Contains 42        : " + B.Contains(42));
+           
+            Console.WriteLine("\nContains 42        : " + B.Contains(42));
             Console.WriteLine("Contains 68        : " + B.Contains(68));
 
             Console.ReadLine();
@@ -478,19 +481,8 @@ namespace Treap
             Console.WriteLine("Height of the Treap: " + B.Height());
             Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
 
-
-            /// NOT WORKING FOR OTHER GENERIC TYPES STILL. WILL FIX LATER
-            //Treap<string> S = new Treap<string>();
-            //string[] testString = new string[] { "yes", "no", "holy", "shit", "pls", "work" };
-            //for (int i = 0; i < testString.Length; i++)
-            //{
-            //    S.Add(testString[i]);
-            //    Console.Write(testString[i] + " ");
-            //}
-
-            //S.Print();
-
             Console.ReadLine();
         }
     }
 }
+
