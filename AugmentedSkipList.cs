@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 // Based on http://igoro.com/archive/skip-lists-are-fascinating/
 // Augmentation based on https://opendatastructures.org/newhtml/ods/latex/skiplists.html
+// Algorithm to update lengths based on https://code.activestate.com/recipes/576930/
 
 namespace SkipLists
 {
@@ -172,7 +173,7 @@ namespace SkipLists
             int floor = maxHeight - 1;
             int height = int.MaxValue;
 
-            if(Remove(item, cur, floor, ref height) != null)
+            if (Remove(item, cur, floor, ref height) != null)
                 size -= 1; // update the size of the skip list if removal is successful
         }
 
@@ -197,7 +198,7 @@ namespace SkipLists
                 // Processing removal for each floor starting from 0
                 if(cur.Next[floor] != null && cur.Next[floor].Item.CompareTo(item) == 0)
                 {
-                    height = cur.Next[floor].Height; // get hthe height of the node to be removed
+                    height = cur.Next[floor].Height; // get the height of the node to be removed
                     removed = cur.Next[floor]; // keeps the removed node here to be returned
                     cur.Next[floor].Height -= 1; // reduce height by one for each floor removed
                     cur.Length[floor] += cur.Next[floor].Length[floor] - 1; // update length of pointer
@@ -211,8 +212,6 @@ namespace SkipLists
                 // Decrease maximum height by 1 when the number of nodes at height i is 0
                 if (head.Next[floor] == null)
                     maxHeight--;
-
-                return removed;
             }
             return removed;
         }
@@ -311,28 +310,165 @@ namespace SkipLists
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Initiating Skip List...");
+
             SkipList<int> S = new SkipList<int>();
 
-            int i;
-            //for (i = 1; i <= 10; i++) { S.Insert(i);}
-            for (i = 1; i <= 6; i++) { S.Insert(i); S.Insert(7 - i); }
+            //int i;
+            ////for (i = 1; i <= 10; i++) { S.Insert(i);}
+            //for (i = 1; i <= 6; i++) { S.Insert(i); S.Insert(7 - i); }
 
-            S.Print();
-            S.Profile();
-            for(i = 1; i <= 6; i++)
-                Console.WriteLine("Rank of " + i + "        : " + S.RankII(i));
-            Console.WriteLine("Min and max      : " + S.RankI(1) + " " + S.RankI(S.size));
+            //S.Print();
+            //S.Profile();
+            //for(i = 1; i <= 6; i++)
+            //    Console.WriteLine("Rank of " + i + "        : " + S.RankII(i));
+            //Console.WriteLine("Min and max      : " + S.RankI(1) + " " + S.RankI(S.size));
 
-            for (i = 1; i <= 2; i++) { S.Remove(6); S.Remove(3); }
-            for (i = 1; i <= 6; i++) Console.WriteLine(S.Contains(i));
+            //for (i = 1; i <= 2; i++) { S.Remove(6); S.Remove(3); }
+            //for (i = 1; i <= 6; i++) Console.WriteLine(S.Contains(i));
 
-            for (i = 1; i <= 6; i++)
-                Console.WriteLine("Rank of " + i + "        : " + S.RankII(i));
-            Console.WriteLine("Min and max        : " + S.RankI(1) + " " + S.RankI(S.size));
-            S.Print();
-            S.Profile();
+            //for (i = 1; i <= 6; i++)
+            //    Console.WriteLine("Rank of " + i + "        : " + S.RankII(i));
+            //Console.WriteLine("Min and max        : " + S.RankI(1) + " " + S.RankI(S.size));
+            //S.Print();
+            //S.Profile();
 
-            Console.ReadKey();
+            //Console.ReadKey();
+
+            System.Threading.Thread.Sleep(100);
+
+            bool run = true;
+            while (run == true) //repeat until quit
+            {
+                Console.Write(
+                "\nMenu:" +
+                "\nInitialize default Skip List    (S):" +
+                "\nInsert new item                 (N):" +
+                "\nDelete existing item            (D):" +
+                "\nFind item in Skip List          (F):" +
+                "\nFind item of Rank (Rank I)      (I):" +
+                "\nFind Rank of item (Rank II)     (R):" +
+                "\nQuit                            (Q):" +
+                "\nInput? :");
+
+                bool valid = false; //validation
+                char input = default;
+                int item;
+
+                while (valid == false)
+                {
+                    try
+                    {
+                        input = Char.ToUpper(Convert.ToChar(Console.ReadLine())); //in case of caps lock
+                        valid = true;
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("Input error, please try again");
+                        Console.Write("Input :");
+                    }
+                }
+
+                switch (input) //operation based on menu input
+                {
+                    // initiate default skip list
+                    case 'S':
+                        Console.WriteLine("Initializing default Skip List ... ");
+                        System.Threading.Thread.Sleep(100);
+                        for (int i = 10; i <= 60; i++) { S.Insert(i); S.Insert(70 - i); i += 9; }
+                        S.Print();
+                        S.Profile();
+                        break;
+
+                    // call Insert()
+                    case 'N':
+                        Console.Write("Please enter the item you would like to insert >> ");
+                        while (!int.TryParse(Console.ReadLine(), out item))
+                            Console.WriteLine("Fail to insert item."
+                                + "\nPlease re-enter item or enter '0' to return to main menu:");
+                        if (item != 0)
+                        {
+                            S.Insert(item);
+                            S.Print();
+                            S.Profile();
+                        }
+                        break;
+
+                    // call Remove()
+                    case 'D':
+                        Console.Write("Please enter the item you would like to remove >> ");
+                        while (!int.TryParse(Console.ReadLine(), out item))
+                            Console.WriteLine("Input not valid."
+                                + "\nPlease re-enter item or enter '0' to return to main menu:");
+                        if (item != 0)
+                        {
+                            S.Remove(item);
+                            S.Print();
+                            S.Profile();
+                        }
+                        break;
+
+                    // call Contains()
+                    case 'F':
+                        Console.Write("Please enter the item >> ");
+                        while (!int.TryParse(Console.ReadLine(), out item))
+                            Console.WriteLine("Input not valid."
+                                + "\nPlease re-enter item or enter '0' to return to main menu:");
+                        if (item != 0)
+                        {
+                            if (S.Contains(item))
+                                Console.WriteLine(item + " found at rank " + S.RankII(item));
+                            else
+                                Console.WriteLine(item + " not found");
+                        }
+                        break;
+
+                    // call RankI()
+                    case 'I':
+                        Console.WriteLine("Current items in the Skip List are: ");
+                        S.Print();
+                        Console.Write("Please enter the Rank >> ");
+                        while (!int.TryParse(Console.ReadLine(), out item))
+                            Console.WriteLine("Input not valid."
+                                + "\nPlease re-enter item or enter '0' to return to main menu:");
+                        int rankedItem = S.RankI(item);
+                        if (rankedItem != 0)
+                            Console.WriteLine("The item of rank " + item + " is " + rankedItem);
+                        else
+                            Console.WriteLine("The rank entered is out of bounds of the skip list");
+                        break;
+
+                    // call RankII()
+                    case 'R':
+                        Console.WriteLine("Current items in the Skip List are: ");
+                        S.Print();
+                        Console.Write("Please enter the item you would like to be ranked >> ");
+                        while (!int.TryParse(Console.ReadLine(), out item))
+                            Console.WriteLine("Input not valid."
+                                + "\nPlease re-enter item or enter '0' to return to main menu:");
+                        int rank = S.RankII(item);
+                        if (rank > 0)
+                            Console.WriteLine("The rank of " + item + " is " + rank);
+                        else
+                            Console.WriteLine(item + " is not found in the Skip List.");
+                        break;
+
+                    // stop program
+                    case 'Q': //quit
+                        run = false; //main loop control variable
+                        break;
+
+
+                    default: //if menu input was a char but didn't match up with any valid menu operations
+                        Console.WriteLine("Unrecognised input, please try again");
+                        break;
+                }
+
+                System.Threading.Thread.Sleep(1000);
+            }
+
+            Console.WriteLine("\nThank you for using the Skip List. Goodbye!");
+            Console.ReadLine();
         }
     }
 }
