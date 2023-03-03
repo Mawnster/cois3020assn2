@@ -10,7 +10,6 @@ using System.Text;
 namespace Treap
 {
     // Interfaces used for a Treap
-
     public interface IContainer<T>
     {
         void MakeEmpty();         // Reset to empty
@@ -43,11 +42,9 @@ namespace Treap
         public Node<T> Right { get; set; }
 
         // *** UPDATE *** Augmented data to support MinGap
-        // The idea is to keep track of the minGap that exist in the subtrees,
-        // and compare those with the gaps at the current root
-        public int MinGap { get; set; }
-        public Node<T> MaxLeft { get; set; }
-        public Node<T> MinRight { get; set; }
+        public int MinGap { get; set; } // stores minGap value for tree rooted at that node
+        public Node<T> MaxLeft { get; set; } // reference to inorder predecessor
+        public Node<T> MinRight { get; set; } // reference to inorder successor
 
         // Node constructor
         public Node(T item)
@@ -91,10 +88,10 @@ namespace Treap
             Node<T> temp = root.Right;
             root.Right = temp.Left;
             temp.Left = root;
-
+            //// *** UPDATE ***
+            // if the rotation causes the old root to loose its right subtree, change minRight to null
             if (root.Right == null)
                 root.MinRight = null;
-
             return temp;
         }
 
@@ -107,14 +104,14 @@ namespace Treap
             Node<T> temp = root.Left;
             root.Left = temp.Right;
             temp.Right = root;
-
+            //// *** UPDATE ***
+            // if the rotation causes the old root to loose its left subtree, change minRight to null
             if (root.Left == null)
                 root.MaxLeft = null;
-
             return temp;
         }
 
-        // *** UPDATE ***
+        //// *** UPDATE ***
         // FindMaxLeft
         // Finds the max value of the left subtree in the current root in a BST
         // Worst case complexity:  O(log n)
@@ -123,14 +120,13 @@ namespace Treap
         {
             Node<T> cur = root.Left;
             if (cur != null)
-            {
+                // find rightmost in left subtree
                 while (cur.Right != null)
                     cur = cur.Right;
-            }
             return cur;
         }
 
-        // *** UPDATE ***
+        //// *** UPDATE ***
         // FindMinRight
         // Finds the min value of the right subtree in the current root in a BST
         // Worst case complexity:  O(log n)
@@ -139,14 +135,13 @@ namespace Treap
         {
             Node<T> cur = root.Right;
             if (cur != null)
-            {
+                // find leftmost in right subtree
                 while (cur.Left != null)
                     cur = cur.Left;
-            }
             return cur;
         }
 
-        // *** UPDATE ***
+        //// *** UPDATE ***
         // CalcMinGap
         // Calculates the minimum gap between current root's adjacent inorder values
         // as well as the minimum gap at its subtrees
@@ -154,39 +149,32 @@ namespace Treap
 
         private void CalcMinGap(Node<T> root)
         {
-            // **NOTE**: MinGap is only calculated for Treap<int>
             int curItem, diffLeftItem = int.MaxValue, diffRightItem = int.MaxValue;
+            // only integers are processed. if not integers, don't calculate minGap
             if (root.Item is int)
             {
                 curItem = Convert.ToInt32(root.Item);
-                if (root.MaxLeft != null)
+                // calculate Gap for current node ...
+                if (root.MaxLeft != null) // with inorder predecessor
                     diffLeftItem = curItem - Convert.ToInt32(root.MaxLeft.Item);
-                if (root.MinRight != null)
+                if (root.MinRight != null) // with inorder successor
                     diffRightItem = Convert.ToInt32(root.MinRight.Item) - curItem;
 
-
-                // Compare the gaps of the root. Assign MinGap as the smaller value
+                // Compare the gaps of the current node. Assign MinGap as the smaller value
                 if (diffLeftItem < diffRightItem)
                     root.MinGap = diffLeftItem;
                 else
                     root.MinGap = diffRightItem;
-
                 // Compare against MinGap of Left and Right Subtrees.
-                // Change the root's MinGap if the subtree's is smaller
-                if (root.Left != null)
+                if (root.Left != null) // if left subtree exists
                 {
-                    if (root.Right != null)
-                    {
-                        // Compare with right subtree if it exists
-                        if (root.MinGap > root.Right.MinGap)
-                            root.MinGap = root.Right.MinGap;
-                    }
-
-                    // Compare with left subtree if it exists
+                    // Compare with left subtree
                     if (root.MinGap > root.Left.MinGap)
                         root.MinGap = root.Left.MinGap;
+                    // also compare with right if it exists
+                    if (root.Right != null && root.MinGap > root.Right.MinGap)
+                            root.MinGap = root.Right.MinGap;
                 }
-
                 // If only right subtree exists, compare with right subtree
                 else if (root.Right != null)
                 {
@@ -217,18 +205,15 @@ namespace Treap
             int cmp;  // Result of a comparison
 
             if (root == null)
-            {
                 return new Node<T>(item);
-            }
             else
             {
                 cmp = item.CompareTo(root.Item);
                 if (cmp > 0)
                 {
                    root.Right = Add(item, root.Right);       // Move right
-
-                    if (root.Right.Priority > root.Priority)  // Rotate left
-                        root = LeftRotate(root);              // (if necessary)
+                   if (root.Right.Priority > root.Priority)  // Rotate left
+                       root = LeftRotate(root);              // (if necessary)
                 }
                 else if (cmp < 0)
                 {
@@ -237,14 +222,11 @@ namespace Treap
                         root = RightRotate(root);             // (if necessary)
                 }
                 // else if (cmp == 0) ... do nothing
-
                 ////////
-                // *** UPDATE *** Update MaxLeft and MinRight for visited nodes
+                // *** UPDATE *** Update MaxLeft, MinRight, and MinGap for visited nodes
                 root.MaxLeft = FindMaxLeft(root);
                 root.MinRight = FindMinRight(root);
-                // *** UPDATE *** recalculate the minimum gap of each node we visit (O(1))
                 CalcMinGap(root);
-
                 return root;
             }
         }
@@ -267,7 +249,6 @@ namespace Treap
         private Node<T> Remove(T item, Node<T> root)
         {
             int cmp;  // Result of a comparison
-
             if (root == null)   // Item not found
                 return null;
             else
@@ -287,7 +268,6 @@ namespace Treap
                             root = RightRotate(root);
                         else
                             root = LeftRotate(root);
-
                     }
                     // Case: One child
                     // Rotate the left child to the given root
@@ -296,24 +276,18 @@ namespace Treap
                     // Rotate the right child to the given root
                     else if (root.Right != null)
                         root = LeftRotate(root);
-
                     // Case: No children (i.e. a leaf node)
                     // Snip off the leaf node containing item
                     else
                         return null;
-
                     // Recursively move item down the Treap
                     root = Remove(item, root);
                 }
-
                 ////////
-                // *** UPDATE *** Update MaxLeft and MinRight for visited nodes
-                // O(1) each. Remove is still O(log n)
+                // *** UPDATE *** Update MaxLeft, MinRight, and MinGap as we return to the root
                 root.MaxLeft = FindMaxLeft(root);
                 root.MinRight = FindMinRight(root);
-                // *** UPDATE *** recalculate the minimum gap of each node we visit (O(1))
                 CalcMinGap(root);
-
                 return root;
             }
         }
@@ -325,7 +299,6 @@ namespace Treap
         public bool Contains(T item)
         {
             Node<T> curr = Root;
-
             while (curr != null)
             {
                 if (item.CompareTo(curr.Item) == 0)     // Found
@@ -336,7 +309,7 @@ namespace Treap
                 else
                     curr = curr.Right;              // Move right
             }
-            return false;
+            return false; // not found
         }
 
         // MakeEmpty
@@ -417,20 +390,20 @@ namespace Treap
             if (root != null)
             {
                 Print(root.Right, index + 5);
-                //// Print for testing purposes
+                //// Print for debugging purposes (Prints values of MaxLeft, MinRight, and MinGap)
                 //if (root.MaxLeft != null)
                 //{
                 //    if (root.MinRight != null)
                 //        Console.WriteLine(new String(' ', index) + root.MaxLeft.Item.ToString() + " " + root.Item.ToString() + " " + root.MinRight.Item.ToString() + " minGap = " + root.MinGap);
                 //    else
-                //        Console.WriteLine(new String(' ', index) + root.MaxLeft.Item.ToString() + " " + root.Item.ToString() + " " + "0" + " minGap = " + root.MinGap);
+                //        Console.WriteLine(new String(' ', index) + root.MaxLeft.Item.ToString() + " " + root.Item.ToString() + " 0 minGap = " + root.MinGap);
                 //}
                 //else
                 //{
                 //    if (root.MinRight != null)
-                //        Console.WriteLine(new String(' ', index) + "0" + " " + root.Item.ToString() + " " + root.MinRight.Item.ToString() + " minGap = " + root.MinGap);
+                //        Console.WriteLine(new String(' ', index) + "0 " + root.Item.ToString() + " " + root.MinRight.Item.ToString() + " minGap = " + root.MinGap);
                 //    else
-                //        Console.WriteLine(new String(' ', index) + "0" + " " + root.Item.ToString() + " " + "0" + " minGap = " + root.MinGap);
+                //        Console.WriteLine(new String(' ', index) + "0 " + root.Item.ToString() + " 0 minGap = " + root.MinGap);
                 //}
                 Console.WriteLine(new String(' ', index) + root.Item.ToString());
                 Print(root.Left, index + 5);
@@ -449,45 +422,33 @@ namespace Treap
             Console.WriteLine("Initializing Treap ... ");
             Treap<int> B = new Treap<int>();
 
+            //// original testing
             //int testNum;
-
             //for (int i = 0; i < 20; i++)
             //{
             //    testNum = V.Next(10, 100); // Add random integers from 10 to 99
             //    B.Add(testNum);
             //    Console.Write(testNum + " ");
             //}
-
             //Console.WriteLine("\n");
-
             //B.Print();
-
             //Console.ReadLine();
-
             //Console.WriteLine("Size of the Treap  : " + B.Size());
             //Console.WriteLine("Height of the Treap: " + B.Height());
             //Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
-
             //Console.WriteLine("\nContains 42        : " + B.Contains(42));
             //Console.WriteLine("Contains 68        : " + B.Contains(68));
-
             //Console.ReadLine();
-
             //for (int i = 0; i < 50; i++)
-            //{
-            //    B.Remove(V.Next(10, 100));  // Remove random integers
-            //}
-
+            //{ B.Remove(V.Next(10, 100));  // Remove random integers }
             //B.Print();
-
             //Console.WriteLine("Size of the Treap  : " + B.Size());
             //Console.WriteLine("Height of the Treap: " + B.Height());
             //Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
-
             //Console.ReadLine();
 
+            // menu for user input
             System.Threading.Thread.Sleep(100);
-
             bool run = true;
             while (run == true) //repeat until quit
             {
@@ -502,11 +463,10 @@ namespace Treap
                 "\nPrint Treap                        (P):" +
                 "\nQuit                               (Q):" +
                 "\nInput? :");
-
                 bool valid = false; //validation
                 char input = default;
                 int item;
-
+                // catch wrong input
                 while (valid == false)
                 {
                     try
@@ -520,7 +480,6 @@ namespace Treap
                         Console.Write("Input :");
                     }
                 }
-
                 switch (input) //operation based on menu input
                 {
                     // insert random values
@@ -535,26 +494,19 @@ namespace Treap
                         }
                         Console.WriteLine();
                         B.Print();
-                        Console.WriteLine("\nSize of the Treap  : " + B.Size());
-                        Console.WriteLine("Height of the Treap: " + B.Height());
-                        Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
+                        Console.WriteLine("\nSize of the Treap  : " + B.Size() +
+                            "\nHeight of the Treap: " + B.Height() +
+                            "\nMinimum gap of the Treap: " + B.MinGap());
                         break;
-
-
                     // remove random values
                     case 'R':
                         for (int i = 0; i < 50; i++)
-                        {
                             B.Remove(V.Next(10, 100));  // Remove random integers
-                        }
-
                         B.Print();
-
-                        Console.WriteLine("Size of the Treap  : " + B.Size());
-                        Console.WriteLine("Height of the Treap: " + B.Height());
-                        Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
+                        Console.WriteLine("\nSize of the Treap  : " + B.Size() +
+                            "\nHeight of the Treap: " + B.Height() +
+                            "\nMinimum gap of the Treap: " + B.MinGap());
                         break;
-
                     // call Insert()
                     case 'N':
                         Console.Write("Please enter the item (integer) you would like to insert >> ");
@@ -563,14 +515,12 @@ namespace Treap
                                 + "\nPlease re-enter item or enter '0' to return to main menu:");
                         if (item != 0)
                         {
-                            B.Add(item);
-                            B.Print();
-                            Console.WriteLine("Size of the Treap  : " + B.Size());
-                            Console.WriteLine("Height of the Treap: " + B.Height());
-                            Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
+                            B.Add(item); B.Print();
+                            Console.WriteLine("\nSize of the Treap  : " + B.Size() +
+                                "\nHeight of the Treap: " + B.Height() +
+                                "\nMinimum gap of the Treap: " + B.MinGap());
                         }
                         break;
-
                     // remove random values ()
                     case 'D':
                         Console.Write("Please enter the item you would like to remove >> ");
@@ -579,14 +529,12 @@ namespace Treap
                                 + "\nPlease re-enter item or enter '0' to return to main menu:");
                         if (item != 0)
                         {
-                            B.Remove(item);
-                            B.Print();
-                            Console.WriteLine("Size of the Treap  : " + B.Size());
-                            Console.WriteLine("Height of the Treap: " + B.Height());
-                            Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
+                            B.Remove(item); B.Print();
+                            Console.WriteLine("\nSize of the Treap  : " + B.Size() +
+                                "\nHeight of the Treap: " + B.Height() +
+                                "\nMinimum gap of the Treap: " + B.MinGap());
                         }
                         break;
-
                     // call Contains()
                     case 'F':
                         Console.Write("Please enter the item >> ");
@@ -601,37 +549,29 @@ namespace Treap
                                 Console.WriteLine(item + " not found");
                         }
                         break;
-
                     // call MinGap()
                     case 'M':
                         Console.WriteLine("Minimum gap of the current Treap: " + B.MinGap());
                         break;
-
                     // call RankII()
                     case 'P':
                         B.Print();
-                        Console.WriteLine("\nSize of the Treap  : " + B.Size());
-                        Console.WriteLine("Height of the Treap: " + B.Height());
-                        Console.WriteLine("Minimum gap of the Treap: " + B.MinGap());
+                        Console.WriteLine("\nSize of the Treap  : " + B.Size() +
+                            "\nHeight of the Treap: " + B.Height() +
+                            "\nMinimum gap of the Treap: " + B.MinGap());
                         break;
-
                     // stop program
                     case 'Q': //quit
                         run = false; //main loop control variable
                         break;
-
-
                     default: //if menu input was a char but didn't match up with any valid menu operations
                         Console.WriteLine("Unrecognised input, please try again");
                         break;
                 }
-
                 System.Threading.Thread.Sleep(1000);
             }
-
             Console.WriteLine("\nThank you for using the Treap. Goodbye!");
             Console.ReadLine();
         }
     }
 }
-
