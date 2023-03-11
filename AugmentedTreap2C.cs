@@ -2,6 +2,7 @@
 // Augmented Treap to support MinGap()
 // Anything modified from the source code will have a bunch of comment out ////
 // and *** UPDATE *** preceeding the comment
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,7 +89,6 @@ namespace Treap
             Node<T> temp = root.Right;
             root.Right = temp.Left;
             temp.Left = root;
-            //// *** UPDATE ***
             // if the rotation causes the old root to loose its right subtree, change minRight to null
             if (root.Right == null)
                 root.MinRight = null;
@@ -104,7 +104,6 @@ namespace Treap
             Node<T> temp = root.Left;
             root.Left = temp.Right;
             temp.Right = root;
-            //// *** UPDATE ***
             // if the rotation causes the old root to loose its left subtree, change minRight to null
             if (root.Left == null)
                 root.MaxLeft = null;
@@ -165,7 +164,9 @@ namespace Treap
                     root.MinGap = diffLeftItem;
                 else
                     root.MinGap = diffRightItem;
+
                 // Compare against MinGap of Left and Right Subtrees.
+                // Change the root's MinGap if the subtree's is smaller
                 if (root.Left != null) // if left subtree exists
                 {
                     // Compare with left subtree
@@ -203,9 +204,9 @@ namespace Treap
         private Node<T> Add(T item, Node<T> root)
         {
             int cmp;  // Result of a comparison
-
+            Node<T> newNode = new Node<T>(item);
             if (root == null)
-                return new Node<T>(item);
+                return newNode;
             else
             {
                 cmp = item.CompareTo(root.Item);
@@ -223,10 +224,13 @@ namespace Treap
                 }
                 // else if (cmp == 0) ... do nothing
                 ////////
-                // *** UPDATE *** Update MaxLeft, MinRight, and MinGap for visited nodes
-                root.MaxLeft = FindMaxLeft(root);
-                root.MinRight = FindMinRight(root);
-                CalcMinGap(root);
+                // *** UPDATE *** Update MaxLeft, MinRight, and MinGap for visited nodes if needed
+                if (root.MaxLeft == null || root.MinRight == null || root.Priority >= newNode.Priority)
+                {
+                    root.MaxLeft = FindMaxLeft(root);
+                    root.MinRight = FindMinRight(root);
+                    CalcMinGap(root);
+                }
                 return root;
             }
         }
@@ -284,10 +288,11 @@ namespace Treap
                     root = Remove(item, root);
                 }
                 ////////
-                // *** UPDATE *** Update MaxLeft, MinRight, and MinGap as we return to the root
-                root.MaxLeft = FindMaxLeft(root);
-                root.MinRight = FindMinRight(root);
-                CalcMinGap(root);
+                // *** UPDATE *** Update MaxLeft, MinRight, and MinGap as we return to the root if needed
+                if (root.MaxLeft == null || (root.MaxLeft != null && root.MaxLeft.Item.CompareTo(item) == 0))
+                { root.MaxLeft = FindMaxLeft(root); CalcMinGap(root); }
+                if (root.MinRight == null || (root.MinRight != null && root.MinRight.Item.CompareTo(item) == 0))
+                { root.MinRight = FindMinRight(root); CalcMinGap(root); }
                 return root;
             }
         }
@@ -309,7 +314,7 @@ namespace Treap
                 else
                     curr = curr.Right;              // Move right
             }
-            return false; // not found
+            return false;
         }
 
         // MakeEmpty
@@ -390,22 +395,22 @@ namespace Treap
             if (root != null)
             {
                 Print(root.Right, index + 5);
-                //// Print for debugging purposes (Prints values of MaxLeft, MinRight, and MinGap)
-                //if (root.MaxLeft != null)
-                //{
-                //    if (root.MinRight != null)
-                //        Console.WriteLine(new String(' ', index) + root.MaxLeft.Item.ToString() + " " + root.Item.ToString() + " " + root.MinRight.Item.ToString() + " minGap = " + root.MinGap);
-                //    else
-                //        Console.WriteLine(new String(' ', index) + root.MaxLeft.Item.ToString() + " " + root.Item.ToString() + " 0 minGap = " + root.MinGap);
-                //}
-                //else
-                //{
-                //    if (root.MinRight != null)
-                //        Console.WriteLine(new String(' ', index) + "0 " + root.Item.ToString() + " " + root.MinRight.Item.ToString() + " minGap = " + root.MinGap);
-                //    else
-                //        Console.WriteLine(new String(' ', index) + "0 " + root.Item.ToString() + " 0 minGap = " + root.MinGap);
-                //}
-                Console.WriteLine(new String(' ', index) + root.Item.ToString());
+                // Print for debugging purposes (Prints values of MaxLeft, MinRight, and MinGap)
+                if (root.MaxLeft != null)
+                {
+                    if (root.MinRight != null)
+                        Console.WriteLine(new String(' ', index) + root.MaxLeft.Item.ToString() + " " + root.Item.ToString() + " " + root.MinRight.Item.ToString() + " minGap = " + root.MinGap);
+                    else
+                        Console.WriteLine(new String(' ', index) + root.MaxLeft.Item.ToString() + " " + root.Item.ToString() + " 0 minGap = " + root.MinGap);
+                }
+                else
+                {
+                    if (root.MinRight != null)
+                        Console.WriteLine(new String(' ', index) + "0 " + root.Item.ToString() + " " + root.MinRight.Item.ToString() + " minGap = " + root.MinGap);
+                    else
+                        Console.WriteLine(new String(' ', index) + "0 " + root.Item.ToString() + " 0 minGap = " + root.MinGap);
+                }
+                //Console.WriteLine(new String(' ', index) + root.Item.ToString());
                 Print(root.Left, index + 5);
             }
         }
@@ -440,7 +445,7 @@ namespace Treap
             //Console.WriteLine("Contains 68        : " + B.Contains(68));
             //Console.ReadLine();
             //for (int i = 0; i < 50; i++)
-            //{ B.Remove(V.Next(10, 100));  // Remove random integers }
+            //{ B.Remove(V.Next(10, 100)); } // Remove random integers 
             //B.Print();
             //Console.WriteLine("Size of the Treap  : " + B.Size());
             //Console.WriteLine("Height of the Treap: " + B.Height());
@@ -463,6 +468,7 @@ namespace Treap
                 "\nPrint Treap                        (P):" +
                 "\nQuit                               (Q):" +
                 "\nInput? :");
+
                 bool valid = false; //validation
                 char input = default;
                 int item;
