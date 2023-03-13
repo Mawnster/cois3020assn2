@@ -241,6 +241,8 @@ namespace TrieRWayTree
             }
         }
 
+
+
         //#####################################       Assnignment 2 algorithms       ##################################################################################
 
 
@@ -262,10 +264,10 @@ namespace TrieRWayTree
             {
                 // add all possible characters to the current string, and move to the next character
                 for (int k = 0; k < 26; k++)
-                    MatchFinder(temp.child[k], pattern, counter+1, keyValue + (char)(k + 'a'));
+                    MatchFinder(temp.child[k], pattern, counter + 1, keyValue + (char)(k + 'a'));
             }
             else // if not *, add the specific character, and call move to the next character in pattern
-                MatchFinder(temp.child[i], pattern, counter+1, keyValue + (char)(i + 'a'));
+                MatchFinder(temp.child[i], pattern, counter + 1, keyValue + (char)(i + 'a'));
 
             void MatchFinder(Node p, string pattern, int j, string key)
             {
@@ -293,7 +295,69 @@ namespace TrieRWayTree
             return keysMatched;
         }
 
+        public List<string> Autocomplete(string prefix)
+        {
+            // start at the root node
+            Node temp = root;
+            // empty list to append to
+            List<string> keysMatched = new List<string>();
+            // counter for the char
+            int counter = 0;
+            // to store a (potentially) complete word
+            string keyValue = "";
 
+            int i = Char.ToLower(prefix[0]) - 'a';
+            // if the current character in pattern is the universal character *
+            if (prefix[0] == '*')
+            {
+                // add all possible characters to the current string, and move to the next character
+                for (int k = 0; k < 26; k++)
+                    MatchFinder(temp.child[k], prefix, counter + 1, keyValue + (char)(k + 'a'));
+            }
+            else // if not *, add the specific character, and call move to the next character in pattern
+                MatchFinder(temp.child[i], prefix, counter + 1, keyValue + (char)(i + 'a'));
+
+            void MatchFinder(Node p, string pattern, int j, string key)
+            {
+                int i;
+                if (p != null) // running condition
+                {
+                    if (j < pattern.Length)
+                    {
+                        i = Char.ToLower(pattern[j]) - 'a';
+                        // if the current character in pattern is the universal character *
+                        if (pattern[j] == '*')
+                        {
+                            // add all possible characters to the current string, and move to the next character
+                            for (int k = 0; k < 26; k++)
+                                MatchFinder(p.child[k], pattern, j + 1, key + (char)(k + 'a'));
+                        }
+                        else // if not *, add the specific character, and call move to the next character in pattern
+                            MatchFinder(p.child[i], pattern, j + 1, key + (char)(i + 'a'));
+                    }
+                    // add only keys that are the same length as the pattern and has an assigned value
+                    if (key.Length == pattern.Length)
+                        FoundWords(p, pattern, key);
+                }
+            }
+            void FoundWords(Node p, string pattern, string key)
+
+            {
+                if (p != null)
+                {
+                    if (!p.value.Equals(default(T)))
+                    {
+                        keysMatched.Add(key);
+                    }
+                    else
+                    {
+                        for (int k = 0; k < 26; k++)
+                            FoundWords(p.child[k], pattern, key + (char)(k + 'a'));
+                    }
+                }
+            }
+            return keysMatched;
+        }
 
         //################################################### End of Algos ####################################################################
 
@@ -303,27 +367,21 @@ namespace TrieRWayTree
     {
         static void Main(string[] args)
         {
-            /*
-            String file = File.ReadAllText(System.IO.Directory.GetCurrentDirectory() + "/words.txt");
-
-            Trie<String> test = new Trie<string>();
-            // add every word from the file
-
-            int keyValue = 10;
-            foreach (string line in File.ReadLines("./words.txt"))
+            void PrintList(List<string> myList)
             {
-                test.Insert(line, "0");
-                keyValue += 10;
+                foreach (string item in myList)
+                {
+                    Console.WriteLine(item);
+                }
             }
 
-            Console.ReadKey();
-            */
             Trie<int> T;
             T = new Trie<int>();
+            List<string> matchedWords = new List<string>();
 
             String file = File.ReadAllText(System.IO.Directory.GetCurrentDirectory() + "/words.txt");
 
-            //Trie<String> test = new Trie<string>();
+
             // add every word from the file
             string insertWord = "";
             int keyValue = 10;
@@ -341,9 +399,40 @@ namespace TrieRWayTree
                 insertWord = "";
             }
 
-            List<string> matchedWords = T.PartialMatch("ar*");
+            /*
+            //Testing for Partial Match
+            // test that multiple results can be returned
+            Console.WriteLine("testing ar*, return: arm, art");
+            matchedWords = T.PartialMatch("ar*");  
+            PrintList(matchedWords);
 
-            Console.WriteLine("Break here to see variables");
+            // test that an exact string doesnt return words that have leading or tailing characters
+            Console.WriteLine("testing act, return: act");
+            matchedWords = T.PartialMatch("agent");  
+            PrintList(matchedWords);
+
+            // testing a beginning wildcard to return words with a different leading char
+            Console.WriteLine("testing *ie, return: die, lie");
+            matchedWords = T.PartialMatch("*ie");  
+            PrintList(matchedWords);
+
+            // testing a single wildcard to only return the only one char word
+            Console.WriteLine("testing *, return: a");
+            matchedWords = T.PartialMatch("*");  
+            PrintList(matchedWords);
+
+            // testing to obtain all 12 letter words with only wildcards
+            Console.WriteLine("testing ************(* x 12), return: organization, particularly, professional, relationship");
+            matchedWords = T.PartialMatch("************");  
+            PrintList(matchedWords);
+            */
+
+            // Testing for Autocomplete
+            Console.WriteLine("testing acti, return: action, activitiy");
+            matchedWords = T.Autocomplete("acti");
+            PrintList(matchedWords);
+
+
 
             Console.ReadKey();
         }

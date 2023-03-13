@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/media/zach/development/trentu/TrentU/winter23/assn2/assn2.csproj": {}
+    "/media/zach/development/trentu/TrentU/winter23/repo/cois3020assn2/assn2/assn2.csproj": {}
   },
   "projects": {
-    "/media/zach/development/trentu/TrentU/winter23/assn2/assn2.csproj": {
+    "/media/zach/development/trentu/TrentU/winter23/repo/cois3020assn2/assn2/assn2.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/media/zach/development/trentu/TrentU/winter23/assn2/assn2.csproj",
+        "projectUniqueName": "/media/zach/development/trentu/TrentU/winter23/repo/cois3020assn2/assn2/assn2.csproj",
         "projectName": "assn2",
-        "projectPath": "/media/zach/development/trentu/TrentU/winter23/assn2/assn2.csproj",
+        "projectPath": "/media/zach/development/trentu/TrentU/winter23/repo/cois3020assn2/assn2/assn2.csproj",
         "packagesPath": "/home/zach/.nuget/packages/",
-        "outputPath": "/media/zach/development/trentu/TrentU/winter23/assn2/obj/",
+        "outputPath": "/media/zach/development/trentu/TrentU/winter23/repo/cois3020assn2/assn2/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/zach/.nuget/NuGet/NuGet.Config"
