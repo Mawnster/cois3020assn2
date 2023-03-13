@@ -349,11 +349,9 @@ namespace TrieRWayTree
                     {
                         keysMatched.Add(key);
                     }
-                    else
-                    {
-                        for (int k = 0; k < 26; k++)
-                            FoundWords(p.child[k], pattern, key + (char)(k + 'a'));
-                    }
+
+                    for (int k = 0; k < 26; k++)
+                        FoundWords(p.child[k], pattern, key + (char)(k + 'a'));
                 }
             }
             return keysMatched;
@@ -367,12 +365,16 @@ namespace TrieRWayTree
     {
         static void Main(string[] args)
         {
+            
             void PrintList(List<string> myList)
             {
+                int counter = 0;
                 foreach (string item in myList)
                 {
                     Console.WriteLine(item);
+                    counter ++;
                 }
+                Console.WriteLine("Word Count = {0}", counter);
             }
 
             Trie<int> T;
@@ -430,6 +432,26 @@ namespace TrieRWayTree
             // Testing for Autocomplete
             Console.WriteLine("testing acti, return: action, activitiy");
             matchedWords = T.Autocomplete("acti");
+            PrintList(matchedWords);
+
+            // Testing full word with wildcards in the middle (Closer to partial match here but return should be the same)
+            Console.WriteLine("testing ad**t, return: admit, adult");
+            matchedWords = T.Autocomplete("ad**t");
+            PrintList(matchedWords);
+
+            // testing input with a single character to return all words starting with (x)
+            Console.WriteLine("testing a, return: all 74 words that start with a");
+            matchedWords = T.Autocomplete("a");
+            PrintList(matchedWords);
+
+            // testing to return every word in the language
+            Console.WriteLine("testing *, return: all 1000 words");
+            matchedWords = T.Autocomplete("*");
+            PrintList(matchedWords);
+            
+            // testing mixed partial words with multiple outputs
+            Console.WriteLine("testing w*r, return: war, word, work, worker, world, worry");
+            matchedWords = T.Autocomplete("w*r");
             PrintList(matchedWords);
 
 
