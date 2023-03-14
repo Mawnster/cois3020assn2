@@ -1,4 +1,32 @@
-﻿
+﻿/*
+
+Assignemnt 2 
+
+Michelle Liu, Zachary Bricknell
+
+Purpose: The purpose of this program is to illustrate the implementation of a Trie and 
+        use multiple algorithms against it (Skeleton code from Blackboard) With the skeleton code
+        laid out the goal is to implement 3 algorithms to be used against it and tested in main
+        by using a text document of 1000 most common words we will be using this to test and verify
+        both the trie and the functionality of the algorithms. 
+
+        PartialMatch() - This function will take a given pattern and return matches for the pattern.
+        what makes it unique is that it takes wildcards denoted with '*' to represent any variation of a letter
+        that may exist. I.E *ar could be car or bar.
+
+        Autocomplete() - this function will act similar in nature to PartialMatch() however it will
+        return all words that are, or include the given pattern at the beginning of the word
+        I.E *ar could return both car and bare. 
+
+        Autocorrect() - This function will return a list of words that differ from the given pattern by 1 letter
+        This letter can exist anywhere in the word but only once. This is accomplished by re-creating the given 
+        pattern with a wildcard in the place of each index of the string.
+        I.e Lone would have 4 variations of *one, l*ne, lo*e, lon*.
+        Once this is done it will run each variation against the first algorithm PartialMatch() and than
+        append the results (no duplicates) to a new list, outputting the final result at the end.
+*/
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -242,8 +270,7 @@ namespace TrieRWayTree
         }
 
 
-
-        //#####################################       Assnignment 2 algorithms       ##################################################################################
+//#####################################       Assnignment 2 algorithms       ##################################################################################
 
 
 
@@ -335,7 +362,7 @@ namespace TrieRWayTree
                         else // if not *, add the specific character, and call move to the next character in pattern
                             MatchFinder(p.child[i], pattern, j + 1, key + (char)(i + 'a'));
                     }
-                    // add only keys that are the same length as the pattern and has an assigned value
+                    // if we have reached the pattern we move on to getting every word that includes this pattern at the beginning.
                     if (key.Length == pattern.Length)
                         FoundWords(p, pattern, key);
                 }
@@ -356,6 +383,40 @@ namespace TrieRWayTree
             }
             return keysMatched;
         }
+        
+        public List<string> Autocorrect(string key)
+        {
+            // start at the root node
+            Node temp = root;
+            // empty list to append to
+            List<string> keysMatched = new List<string>();
+            // counter for the char
+
+            int i = Char.ToLower(key[0]) - 'a';
+            // if the current character in pattern is the universal character *
+
+            // add all possible characters to the current string, and move to the next character
+            for (int counter = 0; counter < key.Length; counter++)
+            {
+                StringBuilder newString = new StringBuilder(key);
+                newString[counter] = '*';
+                String newPattern = newString.ToString();
+                List<string> tempList = PartialMatch(newPattern);
+                // iterate over the new list and avoid duplicates before adding
+                foreach(string myString in tempList)
+                {
+                    if(!keysMatched.Contains(myString))
+                    {
+                        keysMatched.Add(myString);
+                    }
+                }       
+            } 
+            return keysMatched;    
+        }
+
+        
+
+
 
         //################################################### End of Algos ####################################################################
 
@@ -365,14 +426,14 @@ namespace TrieRWayTree
     {
         static void Main(string[] args)
         {
-            
+
             void PrintList(List<string> myList)
             {
                 int counter = 0;
                 foreach (string item in myList)
                 {
                     Console.WriteLine(item);
-                    counter ++;
+                    counter++;
                 }
                 Console.WriteLine("Word Count = {0}", counter);
             }
@@ -409,7 +470,7 @@ namespace TrieRWayTree
             PrintList(matchedWords);
 
             // test that an exact string doesnt return words that have leading or tailing characters
-            Console.WriteLine("testing act, return: act");
+            Console.WriteLine("testing agent, return: act");
             matchedWords = T.PartialMatch("agent");  
             PrintList(matchedWords);
 
@@ -429,6 +490,7 @@ namespace TrieRWayTree
             PrintList(matchedWords);
             */
 
+            /*
             // Testing for Autocomplete
             Console.WriteLine("testing acti, return: action, activitiy");
             matchedWords = T.Autocomplete("acti");
@@ -448,13 +510,36 @@ namespace TrieRWayTree
             Console.WriteLine("testing *, return: all 1000 words");
             matchedWords = T.Autocomplete("*");
             PrintList(matchedWords);
-            
+
             // testing mixed partial words with multiple outputs
             Console.WriteLine("testing w*r, return: war, word, work, worker, world, worry");
             matchedWords = T.Autocomplete("w*r");
             PrintList(matchedWords);
+            */
+
+            /*
+            // Testing for autocorrect
+            // testing for one char off to return 'a' and 'i'
+            Console.WriteLine("testing z, return: a");
+            matchedWords = T.Autocorrect("z");
+            PrintList(matchedWords);
+
+            // testing for using a wildcard within the autocorrect
+            Console.WriteLine("testing a*r, return: 20 various words");
+            matchedWords = T.Autocorrect("a*r");
+            PrintList(matchedWords);
+
+            // testing no matches
+            Console.WriteLine("testing zzz, return: ~none");
+            matchedWords = T.Autocorrect("zzz");
+            PrintList(matchedWords);       
 
 
+            // testing multiple results
+            Console.WriteLine("testing lone, return: none, line, lose, love, long");
+            matchedWords = T.Autocorrect("lone");
+            PrintList(matchedWords);
+            */
 
             Console.ReadKey();
         }
